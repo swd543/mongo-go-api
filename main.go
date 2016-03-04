@@ -9,11 +9,10 @@ import (
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/api/items", api.Items).Methods("GET")
-	r.HandleFunc("/api/items/{id}", api.Item).Methods("GET")
-
-	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	r.HandleFunc("/api/items", api.GetAllItems).Methods("GET")
+	r.HandleFunc("/api/items/{id}", api.GetItem).Methods("GET")
+	r.HandleFunc("/api/items", api.PostItem).Methods("POST")
+	r.HandleFunc("/api/items/{id}", api.DeleteItem).Methods("DELETE")
 
 	http.ListenAndServe(":3000", r)
 }
