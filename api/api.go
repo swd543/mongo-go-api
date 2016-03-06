@@ -1,18 +1,23 @@
 package api
 
 import (
-	"net/http"
-
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/mycodesmells/mongo-go-api/db"
-	"strconv"
 )
 
 func handleError(err error, message string, w http.ResponseWriter) {
 	w.WriteHeader(http.StatusInternalServerError)
 	w.Write([]byte(fmt.Sprintf(message, err)))
+}
+
+func handleCustomError(message string, w http.ResponseWriter) {
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write([]byte(message))
 }
 
 // GetAllItems returns a list of all database items to the response.
@@ -79,6 +84,59 @@ func DeleteItem(w http.ResponseWriter, req *http.Request) {
 
 	if err := db.Remove(id); err != nil {
 		handleError(err, "Failed to remove item: %v", w)
+		return
+	}
+
+	w.Write([]byte("OK"))
+}
+
+// GetImage returns an image bytes.
+func GetImage(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	itemID := vars["id"]
+	imageID := vars["img"]
+
+	image, err := db.LoadImage(itemID, imageID)
+	if err != nil {
+		handleError(err, "Failed to load image: %v", w)
+	}
+
+	w.Write(image)
+}
+
+// UploadImage saves an image.
+func UploadImage(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	itemID := vars["id"]
+
+	file, headers, err := req.FormFile("image")
+	if err != nil {
+		handleError(err, "Failed to process image upload: %v", w)
+		return
+	}
+
+	if file == nil {
+		handleCustomError("File parameter is missing", w)
+		return
+	}
+	defer file.Close()
+
+	if err = db.SaveImage(itemID, headers, file); err != nil {
+		handleError(err, "Failed to save image: %v", w)
+		return
+	}
+
+	w.Write([]byte("OK"))
+}
+
+// DeleteImage removes an image.
+func DeleteImage(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	itemID := vars["id"]
+	imageID := vars["img"]
+
+	if err := db.RemoveImage(itemID, imageID); err != nil {
+		handleError(err, "Failed to delete image: %v", w)
 		return
 	}
 

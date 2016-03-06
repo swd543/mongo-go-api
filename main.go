@@ -9,10 +9,14 @@ import (
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/api/items", api.GetAllItems).Methods("GET")
-	r.HandleFunc("/api/items/{id}", api.GetItem).Methods("GET")
-	r.HandleFunc("/api/items", api.PostItem).Methods("POST")
-	r.HandleFunc("/api/items/{id}", api.DeleteItem).Methods("DELETE")
+	r.HandleFunc("/api/items/", api.GetAllItems).Methods("GET")
+	r.HandleFunc("/api/items/{id}/", api.GetItem).Methods("GET")
+	r.HandleFunc("/api/items/", api.PostItem).Methods("POST")
+	r.HandleFunc("/api/items/{id}/", api.DeleteItem).Methods("DELETE")
+
+	r.HandleFunc("/api/items/{id}/images/{img}", api.GetImage).Methods("GET")
+	r.HandleFunc("/api/items/{id}/images/", api.UploadImage).Methods("POST")
+	r.HandleFunc("/api/items/{id}/images/{img}", api.DeleteImage).Methods("DELETE")
 
 	http.ListenAndServe(":3000", r)
 }
