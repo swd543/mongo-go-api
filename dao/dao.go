@@ -15,7 +15,7 @@ import (
 )
 
 // CONNECTIONSTRING DB connection string
-const CONNECTIONSTRING = "mongodb://localhost:27017"
+const CONNECTIONSTRING = "mongodb://root:password@mongo:27017"
 
 // DBNAME Database name
 const DBNAME = "phonebook"

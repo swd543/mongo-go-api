@@ -22,7 +22,7 @@ const DBNAME = "phonebook"
 const COLLECTION = "people"
 
 // CONNECTIONSTRING DB connection string
-const CONNECTIONSTRING = "mongodb://localhost:27017"
+const CONNECTIONSTRING = "mongodb://root:password@mongo:27017"
 
 func init() {
 	// Populates database with dummy data
