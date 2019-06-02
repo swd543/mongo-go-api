@@ -3,15 +3,16 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"phonebook-backend/handlers"
 	"phonebook-backend/models"
 
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	"github.com/gorilla/mux"
-	"github.com/mongodb/mongo-go-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // DBNAME Database name
@@ -28,7 +29,7 @@ func init() {
 
 	var people []models.Person
 
-	client, err := mongo.NewClient(CONNECTIONSTRING)
+	client, err := mongo.NewClient(options.Client().ApplyURI(CONNECTIONSTRING))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,6 +64,6 @@ func main() {
 	router.HandleFunc("/people", handlers.CreatePersonEndpoint).Methods("POST")
 	router.HandleFunc("/people", handlers.DeletePersonEndpoint).Methods("DELETE")
 	router.HandleFunc("/people/{id}", handlers.UpdatePersonEndpoint).Methods("PUT")
-	fmt.Println("Starting server on port 8000...")
+	log.Println("Starting server on port 8000...")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }

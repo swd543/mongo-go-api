@@ -2,12 +2,16 @@ package dao
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"phonebook-backend/models"
 
-	"github.com/mongodb/mongo-go-driver/bson"
-	"github.com/mongodb/mongo-go-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"go.mongodb.org/mongo-driver/bson"
+
+	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // CONNECTIONSTRING DB connection string
@@ -23,7 +27,7 @@ var db *mongo.Database
 
 // Connect establish a connection to database
 func init() {
-	client, err := mongo.NewClient(CONNECTIONSTRING)
+	client, err := mongo.NewClient(options.Client().ApplyURI(CONNECTIONSTRING))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,7 +53,7 @@ func InsertManyValues(people []models.Person) {
 
 // InsertOneValue inserts one item from Person model
 func InsertOneValue(person models.Person) {
-	fmt.Println(person)
+	log.Println(person)
 	_, err := db.Collection(COLLNAME).InsertOne(context.Background(), person)
 	if err != nil {
 		log.Fatal(err)
@@ -58,7 +62,7 @@ func InsertOneValue(person models.Person) {
 
 // GetAllPeople returns all people from DB
 func GetAllPeople() []models.Person {
-	cur, err := db.Collection(COLLNAME).Find(context.Background(), nil, nil)
+	cur, err := db.Collection(COLLNAME).Find(context.Background(), bson.D{{}}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,19 +93,11 @@ func DeletePerson(person models.Person) {
 
 // UpdatePerson updates an existing person
 func UpdatePerson(person models.Person, personID string) {
-	doc := db.Collection(COLLNAME).FindOneAndUpdate(
+	doc := db.Collection(COLLNAME).FindOneAndReplace(
 		context.Background(),
-		bson.NewDocument(
-			bson.EC.String("id", personID),
-		),
-		bson.NewDocument(
-			bson.EC.SubDocumentFromElements("$set",
-				bson.EC.String("firstname", person.Firstname),
-				bson.EC.String("lastname", person.Lastname),
-				bson.EC.String("contactinfo.city", person.City),
-				bson.EC.String("contactinfo.zipcode", person.Zipcode),
-				bson.EC.String("contactinfo.phone", person.Phone)),
-		),
-		nil)
-	fmt.Println(doc)
+		bson.D{primitive.E{Key: "id", Value: personID}},
+		person,
+	)
+
+	log.Println(doc)
 }
